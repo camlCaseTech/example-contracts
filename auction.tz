@@ -1,0 +1,81 @@
+# ~/alphanet.sh client typecheck script container:auction.tz
+
+# the public key of the owner who will be rewarded the item if they win the auction 
+parameter key_hash; 
+
+# the contract should be originated with
+# %auctionStart
+# %auctionEnd
+# %beneficiary public key of who gets paid for the auction
+# %itemDescription the item being auctioned
+# %highestBidder init as self
+# %highestBid init as 0
+# %auctionEnded init as false
+
+storage (pair
+           # immutable data
+           (pair (pair (timestamp %auctionStart) (timestamp %auctionEnd)) (pair (key_hash %beneficiary) (string %itemDescription)))
+           # mutable data
+           (pair (pair (key_hash %highestBidder) (mutez %highestBid)) (bool %auctionEnded)));
+
+code { DUP; # copy the storage value
+
+       # check if the auction has started
+       CDAAAR %auctionStart;
+       NOW;
+       CMPLT; # If NOW is less than %auctionStart, fail.
+       IF { PUSH string "The auction has not started yet."; FAILWITH }
+          { # The auction has started, let's make sure it has not ended
+            NOW;
+            DIP { DUP; CDAADR %auctionEnd }; # copy the storage value
+            CMPLT;
+            IF { # the auction is active, update the highest bid
+                 # check if bid amount is higher than highest bid
+                 DUP; # copy storage
+                 CDDADR %highestBid;
+                 AMOUNT; # get the tezzies for the bid
+                 CMPGT;
+                 IF { # refund the highest bidder
+                      DUP;
+                      CDDAAR %highestBidder;
+                      IMPLICIT_ACCOUNT; # create an account for the recipient of the funds
+                      DIP { DUP; CDDADR %highestBid };
+                      SWAP;
+                      UNIT;
+                      TRANSFER_TOKENS;
+                      DROP;
+
+                      # replace %highestBid and %highestBidder
+                      DUP; CAR; AMOUNT; SWAP; PAIR; DIP { CDR; DUP; CDDR }; PAIR; DIP { CAR }; SWAP; PAIR;
+
+                      # cleanup
+                      # CDR;
+                      NIL operation;
+                      PAIR;
+                    } 
+                    { PUSH string "Your bid is lower than the highest bid."; FAILWITH };
+               }
+               { # the auction is over, pay the beneficiary if auctionEnded flag is not set
+                 DUP;
+                 CDDDR %auctionEnded;
+                 IF { PUSH string "The auction has already ended."; FAILWITH }
+                    { # give the highest bid to the beneficiary
+                      DUP;
+                      CDADAR %beneficiary;
+                      IMPLICIT_ACCOUNT; # create an account for the recipient of the funds
+                      DIP { DUP; CDDADR %highestBid };
+                      SWAP;
+                      UNIT;
+                      TRANSFER_TOKENS;
+                      DROP;
+
+                      # set the new auctionEnded value
+                      CDR; DUP; CDAR; PUSH bool True; SWAP; PAIR; DIP { CAR }; SWAP; PAIR;
+
+                      # cleanup
+                      NIL operation;
+                      PAIR;
+                    };
+               };
+          };
+     };
