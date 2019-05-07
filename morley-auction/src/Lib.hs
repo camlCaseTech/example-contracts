@@ -8,6 +8,7 @@
 module Lib
   ( auction
   , printAuction
+  , printAuctionSplitLogic
   ) where
 
 import Lorentz
@@ -37,9 +38,11 @@ type Output storage = ([Operation], storage)
 printAuction :: Text
 printAuction = toText $ printTypedContract $ compileLorentz auction
 
+printAuctionSplitLogic :: Text
+printAuctionSplitLogic = toText $ printTypedContract $ compileLorentz auctionSplitLogic
+
 auction :: Contract Parameter Storage
 auction = checkIfAuctionStarted
-
 
 checkIfAuctionStarted :: '[ Input ] :-> '[ Output Storage ]
 checkIfAuctionStarted =
@@ -69,6 +72,43 @@ checkIfAuctionStarted =
                )
            )
        )
+
+
+auctionSplitLogic :: Contract Parameter Storage
+auctionSplitLogic = checkIfStarted
+
+checkIfStarted :: '[ Input ] :-> '[ Output Storage ]
+checkIfStarted = do dup; cdaaar; now; lt; if_ ( push ("The auction has not started yet." :: Text) # failWith ) ended
+
+checkIfEnded :: '[ Input ] :-> '[ Output Storage ]
+checkIfEnded = do now; dip (dup # cdaadr); lt; if_ ended notEnded
+
+ended :: '[ Input ] :-> '[ Output Storage ]
+ended = dup # cddadr # amount # gt # if_ setHighestBid rejectLowBid
+
+setHighestBid :: '[ Input ] :-> '[ Output Storage ]
+setHighestBid =
+  dup # cddaar # implicitAccount # dip (dup # cddadr) # swap # unit # transferTokens # drop
+  # dup # car # amount # swap # pair # dip (cdr # dup # cddr) # pair # dip (car) # swap # pair
+  # nil # pair
+
+rejectLowBid :: '[ Input ] :-> '[ Output Storage ]
+rejectLowBid =
+  push ("Your bid is lower than the highest bid. The highest current bid is:" :: Text)
+  # dip (cdadr) # pair # failWith
+
+notEnded :: '[ Input ] :-> '[ Output Storage ]
+notEnded =
+  dup # cdddr # if_ ( push ("The auction has already ended." :: Text) # failWith ) transferTokensToBeneficiary
+
+transferTokensToBeneficiary ::  '[ Input ] :-> '[ Output Storage ]
+transferTokensToBeneficiary =
+  dup # cdadar # implicitAccount # dip (dup # cddadr) # swap # unit # transferTokens # drop
+      # cdr # dup # cdar # push True # swap # pair # dip (car) # swap # pair #
+        nil # pair         
+     
+           
+
 
 -- callingConvention :: '[ Input ] :-> '[ Output Storage ]
 -- callingConvention = do cdr; nil; pair
