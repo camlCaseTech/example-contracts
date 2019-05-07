@@ -12,6 +12,14 @@ parameter key_hash;
 # %highestBid init as 0
 # %auctionEnded init as false
 
+# timestamp '"2017-08-14T18:00:21Z"'
+# key_hash '"tz1faswCTDciRzE4oJ9jn2Vm2dvjeyA9fUzU"'
+# mutez '"100.00"'
+# (Pair . .)
+# string '"hello"'
+# bool True
+# bool False
+
 storage (pair
            # immutable data
            (pair (pair (timestamp %auctionStart) (timestamp %auctionEnd)) (pair (key_hash %beneficiary) (string %itemDescription)))
@@ -53,7 +61,11 @@ code { DUP; # copy the storage value
                       NIL operation;
                       PAIR;
                     } 
-                    { PUSH string "Your bid is lower than the highest bid."; FAILWITH };
+                    { PUSH string "Your bid is lower than the highest bid. The highest current bid is:";
+                      DIP { CDADR };
+                      PAIR;
+                      FAILWITH
+                    };
                }
                { # the auction is over, pay the beneficiary if auctionEnded flag is not set
                  DUP;

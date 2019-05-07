@@ -1,0 +1,33 @@
+name:                morley-auction
+version:             0.1.0.0
+github:              "camlCaseTech/example-contracts"
+license:             BSD3
+author:              "James M.C. Haver II"
+maintainer:          "james@camlcase.io"
+copyright:           "2019 camlCase"
+
+extra-source-files:
+- README.md
+- ChangeLog.md
+
+description:         Please see the README on GitHub at <https://github.com/githubuser/morley-auction#readme>
+
+dependencies:
+- base-noprelude >= 4.7 && < 5
+- morley-prelude
+
+library:
+  source-dirs: src
+  dependencies:
+    - morley
+
+executables:
+  morley-auction:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - morley-auction
