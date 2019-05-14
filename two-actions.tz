@@ -1,0 +1,17 @@
+# ~/alphanet.sh client typecheck script container:two-actions.tz
+# ~/alphanet.sh client run script container:two-actions.tz on storage '"Throw this away"' and input '(Left Unit)'
+# ~/alphanet.sh client run script container:two-actions.tz on storage '"Throw this away"' and input '(Right Unit)'
+
+parameter (or unit unit);
+storage string;
+code {
+       CAR;
+       IF_LEFT { DROP;
+                 PUSH string "You selected the first action";
+               }
+               { DROP;
+                 PUSH string "You selected the second action";
+               };
+       NIL operation;
+       PAIR
+     };
