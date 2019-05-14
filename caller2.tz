@@ -1,0 +1,12 @@
+# ~/alphanet.sh client typecheck script container:caller2.tz
+
+parameter (pair string (contract (or unit string)));
+storage unit;
+code { DUP; # [input,input]
+       CAAR; RIGHT unit;
+       DIP { CADR; BALANCE };
+       TRANSFER_TOKENS;
+       NIL operation; SWAP; CONS;
+       UNIT; SWAP;
+       PAIR
+     };

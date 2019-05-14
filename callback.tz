@@ -2,19 +2,19 @@
 # ~/alphanet.sh client run script container:callback.tz on storage '"Amazing stuff"' and input '(Left "What does it mean?")'
 # ~/alphanet.sh client run script container:callback.tz on storage '""' and input '(Right "....")'
 
-parameter (or string (pair (contract string) string));
+parameter (or string (contract (or unit string)));
 storage string;
 code {
        DUP; # [input, input]
        CAR; # [parameter, input]
-       IF_LEFT { SWAP; DROP; }    # [string], store the string from the parameter
-               { DUP;             # [ (pair (contract string) string), (pair (contract string) string), input ]
-                 CDR;             # [ string, (pair (contract string) string), input]
-                 DIP { CAR; PUSH mutez 0 }; # [ string, mutez, contract string, input]
-                 TRANSFER_TOKENS; # [unit, input]
-                 DROP;            # [input]
-                 CDR;             # [string]
+       IF_LEFT { SWAP; DROP; NIL operation; }     # [string], store the string from the parameter
+               {                   # [contract (or unit string), input]
+                 DIP { CDR; DUP }; # [contract (or unit string), string, string]
+                 SWAP;
+                 RIGHT unit;
+                 DIP { PUSH mutez 0 }; # [ or unit string, mutez, contract string, input]
+                 TRANSFER_TOKENS; # [operation, string]
+                 NIL operation; SWAP; CONS;  # [list operation, string]
                };
-       NIL operation;
        PAIR
      };
