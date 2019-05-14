@@ -9,50 +9,34 @@ For a token standard, you are likely going to need something like `(big_map addr
 Originate the callback contract
 
 ```
-~/alphanet.sh client originate contract callback for alice \
+~/alphanet.sh client originate contract callback1 for alice \
                                 transferring 0 from alice \
                                 running container:callback.tz \
                                 --init '"Hello World! This is a callback"'
 ```
 
-This gave me this address: "KT1Hk43CvzG9RJNnNCbidha57wd6MZdC9KMd".
+This gave me this address: "KT1Roo3UhX6WP8eoaNP3DnnmaUWqPZmbiGGw".
 
 Originate the caller contract with the address of the callback contract
 
 ```
-~/alphanet.sh client originate contract caller for alice \
+~/alphanet.sh client originate contract caller1 for alice \
                                 transferring 0 from alice \
                                 running container:caller.tz \
-                                --init '(Pair "Nothing to say..." "KT1Hk43CvzG9RJNnNCbidha57wd6MZdC9KMd")'
+                                --init '(Pair "Nothing to say..." "KT1Roo3UhX6WP8eoaNP3DnnmaUWqPZmbiGGw")'
 ```
 
-This gave me this address: "KT1ADK1mE6JhY3bfL5RrhJ7cmY5wkTMf5ZVW"
+This gave me this address: "KT1E1NoYWyYjdVuhHPUCBDZgLiHZiM2SqRcN"
 
 
 ```
-~/alphanet.sh client transfer 0 from alice to caller --arg '(Left Unit)'
+~/alphanet.sh client transfer 0 from alice to caller1 --arg '(Left Unit)'
 ```
 
 ```
-~/alphanet.sh client transfer 0 from alice to callback --arg '(Left "Updated a string from a transaction")'
-~/alphanet.sh client transfer 0 from alice to callback --arg '(Right "KT1ADK1mE6JhY3bfL5RrhJ7cmY5wkTMf5ZVW")'
+~/alphanet.sh client transfer 0 from alice to callback1 --arg '(Left "Updated a string from a transaction")'
+~/alphanet.sh client transfer 0 from alice to callback1 --arg '(Right "KT1ADK1mE6JhY3bfL5RrhJ7cmY5wkTMf5ZVW")'
 ```
-
-
-try something
-```
-~/alphanet.sh client originate contract caller3 for alice \
-                                transferring 1 from alice \
-                                running container:caller2.tz \
-                                --init 'Unit'
-```
-KT1PmamTQhrq42ys9aAfHzesCESpkytRwi74
-
-`~/alphanet.sh client transfer 12.345 from alice to caller3 --arg '(Pair "sending a message from home" "KT1ADK1mE6JhY3bfL5RrhJ7cmY5wkTMf5ZVW")'`
-
-`~/alphanet.sh client list known contracts`
-
-
 
 
 https://tezos.stackexchange.com/questions/278/get-a-returned-value-when-calling-a-michelson-contract/281#281
