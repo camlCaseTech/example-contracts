@@ -1,0 +1,15 @@
+resolver: lts-13.19
+
+packages:
+- .
+- location:
+    git: https://gitlab.com/morley-framework/morley.git
+    commit: 3211b1f67c2b980101afd447a5b1ef61311bd9f8
+    # commit: 76fe2410b8e63d2c658f1234e0258ae77e8375ce
+  extra-dep: true
+
+extra-deps:
+- aeson-options-0.1.0
+- base58-bytestring-0.1.0
+- hex-text-0.1.0.0
+- morley-prelude-0.1.0.4

@@ -1,0 +1,4 @@
+# ~/alphanet.sh client typecheck script container:caller.tz
+parameter (or unit string);
+storage (pair string (contract (or string (contract (or unit string)))));
+code {DUP;CAR;DIP {CDR};IF_LEFT {DROP; SELF; RIGHT string; DIP {DUP; CDR; BALANCE}; TRANSFER_TOKENS; SWAP; PUSH string "Called the contract."; DIP {DUP; DIP {CDR}; CAR}; DIP {DROP}; PAIR; SWAP; NIL operation; SWAP; CONS; PAIR}        {DIP {DUP; DIP {CDR}; CAR}; DIP {DROP}; PAIR; NIL operation; PAIR}}

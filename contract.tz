@@ -1,0 +1,15 @@
+# ~/alphanet.sh client typecheck script container:contract.tz
+# ~/alphanet.sh client run script container:contract.tz on storage '"KT1SykhXqjrDnBbWbJm5K8WJejjzuhbo81QV"' and input '(Some "check this string out")'
+# ~/alphanet.sh client run script container:contract.tz on storage '"KT1Jqtg69LUJUTzqXUgKxcYcgv3gcWXGfoo4"' and input '(Some "check this string out")'
+
+
+
+parameter (option string) ;
+storage (contract string) ;
+code { UNPAIR ; DIP { DUP } ;
+       IF_SOME { } { PUSH string "hello, world" } ;
+       PUSH mutez 0 ; SWAP ;
+       TRANSFER_TOKENS ; # this runs the contract
+       NIL operation ; SWAP ; CONS ;
+       PAIR
+     };

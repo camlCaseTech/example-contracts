@@ -1,0 +1,6 @@
+# ~/alphanet.sh client typecheck script container:id.tz
+# ~/alphanet.sh client run script container:id.tz on storage '""' and input '""'
+
+parameter string;
+storage string;
+code {CAR; NIL operation; PUSH operation ADD; CONS; PAIR};
