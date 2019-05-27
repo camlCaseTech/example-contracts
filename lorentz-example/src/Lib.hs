@@ -54,8 +54,8 @@ data Storage =
     deriving stock Generic
     deriving anyclass IsoValue
 
-tokenContract :: Contract Parameter Storage
-tokenContract = do
+exampleContract :: Contract Parameter Storage
+exampleContract = do
   unpair
   caseT @Parameter
     ( #cInitToken /-> do
@@ -130,4 +130,4 @@ getAccount = do
   dip (get_ #accounts); get; ifNone ( emptyMap # push 0 # pair ) nop
 
 printLorentzExample :: Text
-printLorentzExample = toText $ printTypedContract $ compileLorentz tokenContract
+printLorentzExample = toText $ printTypedContract $ compileLorentz exampleContract

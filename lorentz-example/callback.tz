@@ -1,0 +1,1 @@
+parameter (or string (contract (or unit string)));storage string;code {DUP;CAR;DIP {CDR};IF_LEFT {DIP {DROP}; NIL operation; PAIR}        {DIP {DUP}; SWAP; RIGHT unit; DIP {PUSH mutez 0}; TRANSFER_TOKENS; NIL operation; SWAP; CONS; PAIR}};

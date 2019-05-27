@@ -58,3 +58,6 @@ callbackContract = do
         transferTokens
         nil; swap; cons; pair        
     )
+
+printCallbackContract :: Text
+printCallbackContract = toText $ printTypedContract $ compileLorentz callbackContract
