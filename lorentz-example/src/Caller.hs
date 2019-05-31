@@ -39,34 +39,37 @@ data Storage =
     deriving stock Generic
     deriving anyclass IsoValue
 
+callCallbackContract :: Storage & s :-> Operation & Storage & s
+callCallbackContract = do
+  -- get this contract address
+  self
+  right
+  dip $ do
+    getField #callbackContract
+    balance -- get the tezos from the contract
+  transferTokens
+
 callerContract :: Contract Parameter Storage
 callerContract = do
   unpair
   caseT @Parameter
     ( #cInit /-> do
-        -- drop the input
-        drop; -- [Storage]
+        drop
 
-        -- get this contract address
-        self; -- [Contract 'p, Storage]
-        right;
-        dip (getField #callbackContract #
-             balance -- get the tezos from the contract
-            )
-        transferTokens; -- [Operations, Storage]
+        callCallbackContract
 
         -- set the storage message
-        swap;       -- [Storage, Operations]
-        push ("Called the contract." :: Text)
-        setField #message;
+        dip $ do
+          push ("Called the contract." :: Text)
+          setField #message
 
         -- combine operations
-        swap; nil; swap; cons; pair
+        nil # swap # cons # pair
 
     , #cReceiveCallback /-> do
         -- input is message
-        setField #message;
-        nil; pair
+        setField #message
+        nil # pair
     )
 
 printCallerContract :: Text
