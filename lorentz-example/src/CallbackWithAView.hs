@@ -13,7 +13,7 @@
 -- test adding embeded records to Storage
 -- and see if we can use the getters and accessors on it
 
-module Callback where
+module CallbackWithAView where
 
 import qualified Data.Map as M
 import Lorentz
@@ -24,40 +24,37 @@ import Prelude (Bool(..), Either, Int, Natural, Text, toText)
 import GHC.Generics (Generic)
 
 data Parameter
-  = Init InitParams
-  | ReceiveCallback CallbackParams
+  = SetPause       Bool
+  | GetBalance     (View Address Natural)
   deriving stock Generic
   deriving anyclass IsoValue
 
-type InitParams = Text
-type CallbackParams = ContractAddr (Either () Text)
+type LedgerValue = ("balance" :! Natural, "approvals" :! Map Address Natural)
 
-data Storage =
-  Storage
-    { message   :: Text
-    }
-    deriving stock Generic
+data StorageFields = StorageFields
+  { manager     :: Address
+  , paused      :: Bool
+  , totalSupply :: Natural
+  } deriving stock Generic
     deriving anyclass IsoValue
 
-callbackContract :: Contract Parameter Storage
-callbackContract = do
+data Storage = Storage
+  { ledger :: BigMap Address LedgerValue
+  , fields :: StorageFields
+  } deriving stock Generic
+    deriving anyclass IsoValue
+
+contract2 :: Contract Parameter Storage
+contract2 = do
   unpair
   caseT @Parameter
-    ( #cInit /-> do
-        setField #message; nil; pair
-        
-    , #cReceiveCallback /-> do
-        -- get the message
-        dip (dup # toField #message) -- [Input, Text, Text]
-        swap -- [Text, Input, Text]
-        -- make a Right Unit
-        right
-        -- add 0 tezos
-        dip (push $ unsafeMkMutez 0)
-        -- transfer to initiate the callback
-        transferTokens
-        nil; swap; cons; pair        
+    ( #cSetPause /-> do
+        dip (getField #fields); setField #paused; setField #fields
+        nil; pair
+    , #cGetBalance /-> view_ $ do
+        unpair; dip ( toField #ledger ); get;
+        ifSome (toField #balance) (push 0)
     )
 
-printCallbackContract :: Text
-printCallbackContract = toText $ printTypedContract $ compileLorentz callbackContract
+printCallbackWithAViewContract :: Text
+printCallbackWithAViewContract = toText $ printTypedContract $ compileLorentz contract2

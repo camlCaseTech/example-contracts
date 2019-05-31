@@ -37,6 +37,15 @@ data W = W { totalSupply :: Natural }
   deriving stock Generic
   deriving anyclass IsoValue
 
+data X =
+  X
+    { destination :: Address
+    , amount :: Natural
+    }
+  deriving stock Generic
+  deriving anyclass IsoValue
+
+
 -- type Account = ( "name"    :! Text
 --                , "balance" :! Natural
 --                )
@@ -69,7 +78,7 @@ recordContract = do
   caseT @Parameter
     ( #cInit /-> do
         -- get the name of the system and set it
-        -- get_ #system;
+        -- getField #system;
         -- ddd;
         -- push (1 :: Natural);
 
@@ -85,14 +94,14 @@ recordContract = do
 --        drop
 --        drop
         
-        get_ #system;
+        getField #system;
         dip swap;
-        set_    #system;
+        setField    #system;
         -- [Storage, Input]
         
         -- get the owner amount
         swap;
-        get_ #totalSupply;
+        getField #totalSupply;
         -- fieldCtor "balance";
         push ("owner" :: Text);
         -- fieldCtor "name";
@@ -101,7 +110,7 @@ recordContract = do
         -- [Account, Input, Storage]
         
         -- sender is the owner
-        -- dip (swap # get_ #accounts); -- [Account, Accounts, Storage, Input]
+        -- dip (swap # getField #accounts); -- [Account, Accounts, Storage, Input]
         -- some;
         -- sender;
         -- update
@@ -122,6 +131,39 @@ toW = do
     :& RNil
   dip drop
 
+toX :: s :-> X & s
+toX =
+  construct $
+       fieldCtor (sender)
+    :& fieldCtor (push (0 :: Natural))
+    :& RNil
+
+toX2 :: Address & s :-> X & s
+toX2 = do
+  construct $
+       fieldCtor (dup)
+    :& fieldCtor (push (0 :: Natural))
+    :& RNil
+  dip drop
+
+toX3 :: Address & Natural & s :-> X & s
+toX3 = do
+  construct $
+       fieldCtor (dup)
+    :& fieldCtor (push (0 :: Natural))
+    :& RNil
+  dip (drop # drop)
+
+toX4 :: Address & Natural & s :-> X & s
+toX4 = do
+  construct $
+       fieldCtor (dup)
+    :& fieldCtor (push (0 :: Natural))
+    :& RNil
+  dip (drop)
+  swap; setField #amount
+
+
 eee :: (HasFieldOfType a "totalSupply" Natural) => a & s :-> Natural & a & s
 -- eee :: W & s :-> Natural & W & s
-eee = get_ #totalSupply # push (1 :: Natural) # add
+eee = getField #totalSupply # push (1 :: Natural) # add

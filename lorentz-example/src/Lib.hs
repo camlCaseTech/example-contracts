@@ -59,12 +59,12 @@ exampleContract = do
   unpair
   caseT @Parameter
     ( #cInitToken /-> do
-        get_ #owner; dip (swap); set_ #owner; swap;
-        get_ #totalSupply; dip (swap); set_ #totalSupply; swap;
-        get_ #decimals; dip (swap); set_ #decimals; swap;
-        get_ #name; dip (swap); set_ #name;
-        -- get_ #symbol; dip (swap); set_ #symbol;
-        push (1 :: Natural); set_ #version;
+        getField #owner; dip (swap); setField #owner; swap;
+        getField #totalSupply; dip (swap); setField #totalSupply; swap;
+        getField #decimals; dip (swap); setField #decimals; swap;
+        getField #name; dip (swap); setField #name;
+        -- getField #symbol; dip (swap); setField #symbol;
+        push (1 :: Natural); setField #version;
 
         swap; createOwnerAccount;
         
@@ -78,21 +78,21 @@ exampleContract = do
         getAccount; -- [Account, Storage, ApproveParams]
 
         dip swap # swap; -- [ApproveParams, Account, Storage]
-        get_ #tokens;
+        getField #tokens;
         push (0 :: Natural);
         eq;
 
         -- [ApproveParams, Account, Storage]
         if_ ( do
                 swap; unpair;             -- [Balance, Allowances, ApproveParams, Storage]
-                dip ( dip (get_ #spender) -- [Balance, Allowances, spender, ApproveParams, Storage]
+                dip ( dip (getField #spender) -- [Balance, Allowances, spender, ApproveParams, Storage]
                     # swap                -- [Balance, spender, Allowances, ApproveParams, Storage]
                     # dip none # update); -- [Balance, Allowances, ApproveParams, Storage]              
                 pair;
             )
             ( do
-                get_ #spender;                -- [spender, ApproveParams, Account, Storage]
-                dip (get_ #tokens # some)     -- [spender, some tokens, ApproveParams, Account, Storage]
+                getField #spender;                -- [spender, ApproveParams, Account, Storage]
+                dip (getField #tokens # some)     -- [spender, some tokens, ApproveParams, Account, Storage]
                 dip (dip (swap # dup # cdr)) -- [spender, some tokens, Allowances, Account, ApproveParams, Storage]
                 update;                    -- [Allowances, Account, ApproveParams, Storage]
                 -- failWith
@@ -100,34 +100,34 @@ exampleContract = do
             );
         -- [Account, ApproveParams, Storage]
         some
-        dip (swap # get_ #accounts) -- [Account, Accounts, Storage, ApproveParams]
+        dip (swap # getField #accounts) -- [Account, Accounts, Storage, ApproveParams]
         sender
         update
 
-        set_ #accounts
+        setField #accounts
         dip drop
         nil; pair;
     )
 
 createOwnerAccount :: '[InitParams, Storage] :-> '[Storage]
 createOwnerAccount = do
-  dip (get_ #accounts); -- [InputParams, Accounts, Storage]
+  dip (getField #accounts); -- [InputParams, Accounts, Storage]
 
-  get_ #totalSupply;
+  getField #totalSupply;
   emptyMap;
   swap;
   pair; 
   some; -- [Option (Balance, Allowances), InputParams, Accounts, Storage]
   
   swap;
-  access_ #owner; -- [owner, Option (Balance, Allowances), Accounts, Storage]
+  toField #owner; -- [owner, Option (Balance, Allowances), Accounts, Storage]
 
   update;
-  set_ #accounts;
+  setField #accounts;
 
 getAccount :: Address & Storage & s :-> Account & Storage & s
 getAccount = do
-  dip (get_ #accounts); get; ifNone ( emptyMap # push 0 # pair ) nop
+  dip (getField #accounts); get; ifNone ( emptyMap # push 0 # pair ) nop
 
 printLorentzExample :: Text
 printLorentzExample = toText $ printTypedContract $ compileLorentz exampleContract

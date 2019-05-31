@@ -50,7 +50,7 @@ callerContract = do
         -- get this contract address
         self; -- [Contract 'p, Storage]
         right;
-        dip (get_ #callbackContract #
+        dip (getField #callbackContract #
              balance -- get the tezos from the contract
             )
         transferTokens; -- [Operations, Storage]
@@ -58,14 +58,14 @@ callerContract = do
         -- set the storage message
         swap;       -- [Storage, Operations]
         push ("Called the contract." :: Text)
-        set_ #message;
+        setField #message;
 
         -- combine operations
         swap; nil; swap; cons; pair
 
     , #cReceiveCallback /-> do
         -- input is message
-        set_ #message;
+        setField #message;
         nil; pair
     )
 
